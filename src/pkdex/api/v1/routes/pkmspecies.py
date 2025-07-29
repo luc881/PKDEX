@@ -30,22 +30,36 @@ async def read_all(db: db_dependency):
     todos = db.query(PKMSpecies).all()
     return todos
 
-# @router.post(    '/',
-#             status_code=status.HTTP_201_CREATED,
-#             response_model=PKMSpeciesResponse,
-#             summary="Create a new Pokémon type",
-#             description="Adds a new Pokémon type to the database. The type name must be unique and in lowercase.")
-# async def create_type(db: db_dependency, type_request: PKMSpeciesRequest):
-#     type_model = PKMSpecies(**type_request.model_dump())
-#
-#     type_found = db.query(PKMSpecies).filter(PKMSpecies.name.ilike(type_model.name)).first()
-#
-#     if type_found:
-#         raise HTTPException(status_code=409, detail='Type already exists')
-#
-#     db.add(type_model)
-#     db.commit()
-#     db.refresh(type_model)  # Refresh to get the ID and other generated fields
-#     return type_model
+@router.post(    '/',
+            status_code=status.HTTP_201_CREATED,
+            response_model=PKMSpeciesResponse,
+            summary="Create a new Pokémon species",
+            description="Adds a new Pokémon species to the database.")
+async def create_type(db: db_dependency, pkmspecies_request: PKMSpeciesRequest):
+    pkmspecies_model = PKMSpecies(**pkmspecies_request.model_dump())
+
+    pkmspecies_duplicate = db.query(PKMSpecies).filter(
+        (PKMSpecies.national_dex_number == pkmspecies_model.national_dex_number) |
+        (PKMSpecies.name_es == pkmspecies_model.name_es) |
+        (PKMSpecies.name_jp == pkmspecies_model.name_jp)
+    ).first()
+
+    if pkmspecies_duplicate:
+        if pkmspecies_duplicate.national_dex_number == pkmspecies_model.national_dex_number:
+            field = "national_dex_number"
+        elif pkmspecies_duplicate.name_es == pkmspecies_model.name_es:
+            field = "name_es"
+        else:
+            field = "name_jp"
+
+        raise HTTPException(
+            status_code=409,
+            detail=f"Pokémon species with the same {field} already exists"
+        )
+
+    db.add(pkmspecies_model)
+    db.commit()
+    db.refresh(pkmspecies_model)  # Refresh to get the ID and other generated fields
+    return pkmspecies_model
 
 

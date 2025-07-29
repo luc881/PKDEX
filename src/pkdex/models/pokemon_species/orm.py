@@ -7,9 +7,9 @@ class PKMSpecies(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     national_dex_number: Mapped[int] = mapped_column(unique=True)
-    evolution_line_id: Mapped[int] = mapped_column(unique=True)
-    name_es: Mapped[str]
-    name_jp: Mapped[str]
+    evolution_line_id: Mapped[int]
+    name_es: Mapped[str] = mapped_column(unique=True)
+    name_jp: Mapped[str] = mapped_column(unique=True)
     generation: Mapped[int]
     has_gender_differences: Mapped[bool]
     description: Mapped[str]
