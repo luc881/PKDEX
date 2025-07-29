@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from .db.session import engine, Base
-from .api.v1.routes import types, regions
+from .api.v1.routes import types, regions, pkmspecies
 
 app = FastAPI()
 
@@ -16,5 +16,5 @@ def health_check():
 
 app.include_router(types.router)
 app.include_router(regions.router)
-
+app.include_router(pkmspecies.router)
 
