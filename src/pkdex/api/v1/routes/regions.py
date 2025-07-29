@@ -35,17 +35,17 @@ async def read_all(db: db_dependency):
             response_model=RegionsResponse,
             summary="Create a new Pokémon region",
             description="Adds a new Pokémon region to the database. The type name must be unique and in lowercase.")
-async def create_type(db: db_dependency, type_request: RegionsRequest):
-    type_model = Regions(**type_request.model_dump())
+async def create_region(db: db_dependency, region_request: RegionsRequest):
+    region_model = Regions(**region_request.model_dump())
 
-    type_found = db.query(Regions).filter(Regions.name.ilike(type_model.name)).first()
+    type_duplicate = db.query(Regions).filter(Regions.name.ilike(region_model.name)).first()
 
-    if type_found:
+    if type_duplicate:
         raise HTTPException(status_code=409, detail='Type already exists')
 
-    db.add(type_model)
+    db.add(region_model)
     db.commit()
-    db.refresh(type_model)  # Refresh to get the ID and other generated fields
-    return type_model
+    db.refresh(region_model)  # Refresh to get the ID and other generated fields
+    return region_model
 
 

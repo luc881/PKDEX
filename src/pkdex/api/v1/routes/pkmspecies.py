@@ -35,7 +35,7 @@ async def read_all(db: db_dependency):
             response_model=PKMSpeciesResponse,
             summary="Create a new Pokémon species",
             description="Adds a new Pokémon species to the database.")
-async def create_type(db: db_dependency, pkmspecies_request: PKMSpeciesRequest):
+async def create_pkmspecies(db: db_dependency, pkmspecies_request: PKMSpeciesRequest):
     pkmspecies_model = PKMSpecies(**pkmspecies_request.model_dump())
 
     pkmspecies_duplicate = db.query(PKMSpecies).filter(
