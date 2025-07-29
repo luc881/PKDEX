@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, APIRouter
+from fastapi import Depends, HTTPException, APIRouter, Path
 from starlette import status
 from ....models.pokemon_species.orm import PKMSpecies
 from ....db.session import SessionLocal
@@ -61,5 +61,45 @@ async def create_pkmspecies(db: db_dependency, pkmspecies_request: PKMSpeciesReq
     db.commit()
     db.refresh(pkmspecies_model)  # Refresh to get the ID and other generated fields
     return pkmspecies_model
+
+@router.put("/{pkmspecies_id}", status_code=status.HTTP_200_OK,
+            response_model=PKMSpeciesResponse,
+            summary="Update a Pokémon species",
+            description="Updates a Pokémon species to the database."
+            )
+async def update_pkmspecies(db: db_dependency, pkmspecies_request: PKMSpeciesRequest, pkmspecies_id: int = Path(..., gt=0, description="The ID of the pkm species item to update.")):
+
+    pkmspecies = db.query(PKMSpecies).filter(PKMSpecies.id == pkmspecies_id).first()
+
+    if not pkmspecies:
+        raise HTTPException(status_code=404, detail="Pokémon species not found")
+
+    # Validar duplicados para los campos únicos
+    duplicate = db.query(PKMSpecies).filter(
+        ((PKMSpecies.national_dex_number == pkmspecies_request.national_dex_number) |
+        (PKMSpecies.name_es == pkmspecies_request.name_es) |
+        (PKMSpecies.name_jp == pkmspecies_request.name_jp)) &
+        (PKMSpecies.id != pkmspecies_id)  # Ignorar el registro actual
+    ).first()
+
+    if duplicate:
+        if duplicate.national_dex_number == pkmspecies_request.national_dex_number:
+            field = "national_dex_number"
+        elif duplicate.name_es == pkmspecies_request.name_es:
+            field = "name_es"
+        else:
+            field = "name_jp"
+
+        raise HTTPException(
+            status_code=409,
+            detail=f"Pokémon species with the same {field} already exists"
+        )
+
+    for key, value in pkmspecies_request.model_dump().items():
+        setattr(pkmspecies, key, value)
+
+    db.commit()
+
+    return pkmspecies
 
 
