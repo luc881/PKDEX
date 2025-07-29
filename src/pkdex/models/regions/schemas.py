@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field, field_validator
 from typing import Literal
 
-class RegionRequest(BaseModel):
+class RegionsRequest(BaseModel):
     name: Literal[
         'kanto', 'johto', 'hoenn', 'sinnoh', 'hisui', 'unova', 'kalos', 'alola', 'galar', 'paldea'
     ] = Field(..., description="Pokemon region")
