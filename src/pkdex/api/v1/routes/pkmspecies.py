@@ -102,4 +102,19 @@ async def update_pkmspecies(db: db_dependency, pkmspecies_request: PKMSpeciesReq
 
     return pkmspecies
 
+@router.delete("/{pkmspecies_id}", status_code=status.HTTP_200_OK,
+            response_model=PKMSpeciesResponse,
+            summary="Delete a Pokémon species",
+            description="Delete a Pokémon species to the database."
+            )
+async def delete_pkmspecies(db: db_dependency, pkmspecies_request: PKMSpeciesRequest, pkmspecies_id: int = Path(..., gt=0, description="The ID of the pkm species item to update.")):
 
+    pkmspecies = db.query(PKMSpecies).filter(PKMSpecies.id == pkmspecies_id).first()
+
+    if not pkmspecies:
+        raise HTTPException(status_code=404, detail="Pokémon species not found")
+
+    db.delete(pkmspecies)
+    db.commit()
+
+    return pkmspecies
